@@ -20,7 +20,7 @@ dotenv.config();
 
 // Connecting to database
 connect();
- 
+
 // Middlewares
 const app = express();
 app.use(express.json());

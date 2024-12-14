@@ -4,15 +4,17 @@ const mailSender = async (email, title, body) => {
   try {
     let transporter = nodemailer.createTransport({
       host: process.env.MAIL_HOST,
-      auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS,
-      },
+      port: 1025,
+      // auth: {
+      //   user: process.env.MAIL_USER,
+      //   pass: process.env.MAIL_PASS,
+      // },
       secure: false,
     })
 
     let info = await transporter.sendMail({
-      from: `"edumart | Code-mja" <${process.env.MAIL_USER}>`, // sender address
+      // from: `"edumart | Code-mja" <${process.env.MAIL_USER}>`, // sender address
+      from: 'tom825068@gmail.com',
       to: `${email}`, // list of receivers
       subject: `${title}`, // Subject line
       html: `${body}`, // html body
