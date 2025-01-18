@@ -77,7 +77,7 @@ export const createCourse = async (req, res) => {
       thumbnail,
       process.env.FOLDER_NAME
     )
-    console.log(thumbnailImage)
+    // console.log(thumbnailImage)
     // Create a new course with the given details
     const newCourse = await Course.create({
       courseName,
@@ -123,7 +123,7 @@ export const createCourse = async (req, res) => {
     })
   } catch (error) {
     // Handle any errors that occur during the creation of the course
-    console.error(error)
+    // console.error(error)
     res.status(500).json({
       success: false,
       message: "Failed to create course",

@@ -49,7 +49,7 @@ export const updateProfile = async (req, res) => {
       updatedUserDetails,
     })
   } catch (error) {
-    console.log(error)
+    // console.log(error)
     return res.status(500).json({
       success: false,
       error: error.message,
@@ -100,7 +100,7 @@ export const getAllUserDetails = async (req, res) => {
     const userDetails = await User.findById(id)
       .populate("additionalDetails")
       .exec()
-    console.log(userDetails)
+    // console.log(userDetails)
     res.status(200).json({
       success: true,
       message: "User Data fetched successfully",
@@ -124,7 +124,7 @@ export const updateDisplayPicture = async (req, res) => {
       1000,
       1000
     )
-    console.log(image)
+    // console.log(image)
     const updatedProfile = await User.findByIdAndUpdate(
       { _id: userId },
       { image: image.secure_url },
@@ -232,7 +232,7 @@ export const instructorDashboard = async (req, res) => {
 
     res.status(200).json({ courses: courseData })
   } catch (error) {
-    console.error(error)
+    // console.error(error)
     res.status(500).json({ message: "Server Error" })
   }
 }

@@ -56,7 +56,7 @@ export const capturePayment = async (req, res) => {
   try {
     // Initiate the payment using Razorpay
     const paymentResponse = await instance.orders.create(options)
-    console.log(paymentResponse)
+    // console.log(paymentResponse)
     res.json({
       success: true,
       data: paymentResponse,
@@ -129,7 +129,7 @@ export const sendPaymentSuccessEmail = async (req, res) => {
       )
     )
   } catch (error) {
-    console.log("error in sending mail", error)
+    // console.log("error in sending mail", error)
     return res
       .status(400)
       .json({ success: false, message: "Could not send email" })
@@ -158,7 +158,7 @@ const enrollStudents = async (courses, userId, res) => {
           .status(500)
           .json({ success: false, error: "Course not found" })
       }
-      console.log("Updated course: ", enrolledCourse)
+      // console.log("Updated course: ", enrolledCourse)
 
       const courseProgress = await CourseProgress.create({
         courseID: courseId,
@@ -177,7 +177,7 @@ const enrollStudents = async (courses, userId, res) => {
         { new: true }
       )
 
-      console.log("Enrolled student: ", enrolledStudent)
+      // console.log("Enrolled student: ", enrolledStudent)
       // Send an email notification to the enrolled student
       const emailResponse = await mailSender(
         enrolledStudent.email,
@@ -188,9 +188,9 @@ const enrollStudents = async (courses, userId, res) => {
         )
       )
 
-      console.log("Email sent successfully: ", emailResponse.response)
+      // console.log("Email sent successfully: ", emailResponse.response)
     } catch (error) {
-      console.log(error)
+      // console.log(error)
       return res.status(400).json({ success: false, error: error.message })
     }
   }

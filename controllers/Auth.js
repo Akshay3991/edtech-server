@@ -58,7 +58,7 @@ export const signup = async (req, res) => {
 
     // Find the most recent OTP for the email
     const response = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1)
-    console.log(response)
+    // console.log(response)
     if (response.length === 0) {
       // OTP not found for the email
       return res.status(400).json({
@@ -105,7 +105,7 @@ export const signup = async (req, res) => {
       message: "User registered successfully",
     })
   } catch (error) {
-    console.error(error)
+    // console.error(error)
     return res.status(500).json({
       success: false,
       message: "User cannot be registered. Please try again.",
@@ -217,7 +217,7 @@ export const sendotp = async (req, res) => {
       otp,
     })
   } catch (error) {
-    console.log(error.message)
+    // console.log(error.message)
     return res.status(500).json({ success: false, error: error.message })
   }
 }
@@ -263,7 +263,7 @@ export const changePassword = async (req, res) => {
       )
     } catch (error) {
       // If there's an error sending the email, log the error and return a 500 (Internal Server Error) error
-      console.error("Error occurred while sending email:", error)
+      // console.error("Error occurred while sending email:", error)
       return res.status(500).json({
         success: false,
         message: "Error occurred while sending email",
@@ -277,7 +277,7 @@ export const changePassword = async (req, res) => {
       .json({ success: true, message: "Password updated successfully" })
   } catch (error) {
     // If there's an error updating the password, log the error and return a 500 (Internal Server Error) error
-    console.error("Error occurred while updating password:", error)
+    // console.error("Error occurred while updating password:", error)
     return res.status(500).json({
       success: false,
       message: "Error occurred while updating password",
