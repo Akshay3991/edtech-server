@@ -13,7 +13,7 @@ const mailSender = async (email, title, body) => {
     })
 
     let info = await transporter.sendMail({
-      from: `"edumart | Code-mja" <${process.env.MAIL_USER}>`, // sender address
+      from: "educationmart03@gmail.com", // sender address
       // from: 'tom825068@gmail.com',
       to: `${email}`, // list of receivers
       subject: `${title}`, // Subject line
