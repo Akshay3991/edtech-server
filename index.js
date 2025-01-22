@@ -23,14 +23,23 @@ connect();
 
 // Middlewares
 const app = express();
+// Configure CORS options
+const corsOptions = {
+	origin: 'https://www.educationmart.me', // Frontend domain
+	methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+	credentials: true, // Allow cookies and authorization headers
+  };
+  
+  // Enable CORS middleware
+  app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
-app.use(
-	cors({
-		origin: "*",
-		credentials: true,
-	})
-);
+// app.use(
+// 	cors({
+// 		origin: "*",
+// 		credentials: true,
+// 	})
+// );
 app.use(
 	fileUpload({
 		useTempFiles: true,
