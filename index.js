@@ -25,9 +25,9 @@ connect();
 const app = express();
 // Configure CORS options
 const corsOptions = {
-	origin: 'https://www.educationmart.me', // Frontend domain
-	methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-	credentials: true, // Allow cookies and authorization headers
+	 origin: [process.env.FRONTEND_URL],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,  // Allow cookies and authorization headers
   };
   
   // Enable CORS middleware
