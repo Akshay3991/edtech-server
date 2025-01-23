@@ -51,6 +51,11 @@ app.use(
 cloudinaryConnect();
 
 // Setting up routes
+app.get('/api/v1/test', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL);
+    res.json({ success: true, message: 'CORS test successful' });
+});
+
 app.use("/api/v1/auth", userRoutes);
 app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/course", courseRoutes);
