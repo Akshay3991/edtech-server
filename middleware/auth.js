@@ -85,9 +85,6 @@ const isAdmin = async (req, res, next) => {
 const isInstructor = async (req, res, next) => {
   try {
     const userDetails = await User.findOne({ email: req.user.email });
-    console.log(userDetails);
-
-    console.log(userDetails.accountType);
 
     if (userDetails.accountType !== "Instructor") {
       return res.status(401).json({
