@@ -1,16 +1,16 @@
 // Importing necessary modules and packages
-import express from 'express';
-import userRoutes from './routes/user.js';
-import profileRoutes from './routes/profile.js';
-import courseRoutes from './routes/Course.js';
-import paymentRoutes from './routes/Payments.js';
-import contactUsRoute from './routes/Contact.js';
-import { connect } from './config/database.js';
-import cookieParser from 'cookie-parser';
-import cors from 'cors';
-import { cloudinaryConnect } from './config/cloudinary.js';
-import fileUpload from 'express-fileupload';
-import dotenv from 'dotenv';
+import express from "express";
+import userRoutes from "./routes/user.js";
+import profileRoutes from "./routes/profile.js";
+import courseRoutes from "./routes/Course.js";
+import paymentRoutes from "./routes/Payments.js";
+import contactUsRoute from "./routes/Contact.js";
+import { connect } from "./config/database.js";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import { cloudinaryConnect } from "./config/cloudinary.js";
+import fileUpload from "express-fileupload";
+import dotenv from "dotenv";
 
 // Setting up port number
 const PORT = process.env.PORT || 4000;
@@ -25,14 +25,13 @@ connect();
 const app = express();
 // Configure CORS options
 const corsOptions = {
-	 origin: [process.env.FRONTEND_URL],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,  // Allow cookies and authorization headers
-  };
+  origin: [process.env.FRONTEND_URL],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true, // Allow cookies and authorization headers
+};
 
-
-  // Enable CORS middleware
-  app.use(cors(corsOptions));
+// Enable CORS middleware
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 // app.use(
@@ -42,19 +41,19 @@ app.use(cookieParser());
 // 	})
 // );
 app.use(
-	fileUpload({
-		useTempFiles: true,
-		tempFileDir: "/tmp/",
-	})
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
 );
 
 // Connecting to cloudinary
 cloudinaryConnect();
 
 // Setting up routes
-app.get('/api/v1/test', (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL);
-    res.json({ success: true, message: 'CORS test successful' });
+app.get("/api/v1/test", (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+  res.json({ success: true, message: "CORS test successful" });
 });
 
 app.use("/api/v1/auth", userRoutes);
@@ -65,15 +64,15 @@ app.use("/api/v1/reach", contactUsRoute);
 
 // Testing the server
 app.get("/", (req, res) => {
-	return res.json({
-		success: true,
-		message: "Your server is up and running ...",
-	});
+  return res.json({
+    success: true,
+    message: "Your server is up and running ...",
+  });
 });
 
 // Listening to the server
 app.listen(PORT, () => {
-	console.log(`App is listening at ${PORT}`);
+  console.log(`App is listening at ${PORT}`);
 });
 
 // End of code.
