@@ -24,19 +24,15 @@ connect();
 // Middlewares
 const app = express();
 // Configure CORS options
-// const corsOptions = {
-// 	 origin: [process.env.FRONTEND_URL],
-//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//     credentials: true,  // Allow cookies and authorization headers
-//   };
-  app.use(cors({
-    origin: '*',
+const corsOptions = {
+	 origin: [process.env.FRONTEND_URL],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,
-}));
+    credentials: true,  // Allow cookies and authorization headers
+  };
+
 
   // Enable CORS middleware
-//   app.use(cors(corsOptions));
+  app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 // app.use(
