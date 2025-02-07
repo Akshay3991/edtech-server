@@ -14,7 +14,7 @@ import dotenv from "dotenv";
 
 // Setting up port number
 const PORT = process.env.PORT || 4000;
-const FRONTEND_URL = "https://www.educationmart.me"
+const FRONTEND_URL = "https://edtech-client-nu.vercel.app/"
 // Loading environment variables from .env file
 dotenv.config();
 
