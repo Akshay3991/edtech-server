@@ -14,7 +14,6 @@ import dotenv from "dotenv";
 
 // Setting up port number
 const PORT = process.env.PORT || 4000;
-const FRONTEND_URL = "https://edtech-client-nu.vercel.app/"
 // Loading environment variables from .env file
 dotenv.config();
 
@@ -25,7 +24,7 @@ connect();
 const app = express();
 // Configure CORS options
 const corsOptions = {
-  origin: "https://edtech-client-nu.vercel.app/",
+  origin: [process.env.FRONTEND_URL],
   // origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true, // Allow cookies and authorization headers
@@ -53,7 +52,7 @@ cloudinaryConnect();
 
 // Setting up routes
 app.get("/api/v1/test", (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin",FRONTEND_URL);
+  res.setHeader("Access-Control-Allow-Origin",process.env.FRONTEND_URL);
   res.json({ success: true, message: "CORS test successful" });
 });
 
