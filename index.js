@@ -24,8 +24,8 @@ connect();
 const app = express();
 // Configure CORS options
 const corsOptions = {
-  origin: [process.env.FRONTEND_URL],
-  // origin: "*",
+  // origin: [process.env.FRONTEND_URL],
+  origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true, // Allow cookies and authorization headers
 };
@@ -52,7 +52,7 @@ cloudinaryConnect();
 
 // Setting up routes
 app.get("/api/v1/test", (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin",process.env.FRONTEND_URL);
+  res.setHeader("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
   res.json({ success: true, message: "CORS test successful" });
 });
 
