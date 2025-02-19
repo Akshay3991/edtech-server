@@ -24,8 +24,8 @@ connect();
 const app = express();
 // Configure CORS options
 const corsOptions = {
-  // origin: [process.env.FRONTEND_URL],
-  origin: "*",
+  origin: [process.env.FRONTEND_URL],
+  // origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true, // Allow cookies and authorization headers
 };
