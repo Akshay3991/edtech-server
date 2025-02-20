@@ -4,20 +4,17 @@ import { SubSection } from "../models/Subsection.js"
 // CREATE a new section
 export const createSection = async (req, res) => {
   try {
-    // Extract properties from request body
     const { sectionName, courseId } = req.body;
 
-    // Validate input
+    // Validate request data
     if (!sectionName || !courseId) {
       return res.status(400).json({
         success: false,
-        message: "Section name and course ID are required",
+        message: "Missing required properties",
       });
     }
 
-    // console.log("📩 Received Request Data:", { sectionName, courseId });
-
-    // Check if the course exists
+    // Check if course exists
     const course = await Course.findById(courseId);
     if (!course) {
       return res.status(404).json({
@@ -26,25 +23,22 @@ export const createSection = async (req, res) => {
       });
     }
 
-    // Create a new section and associate it with the course
+    // Create new section and assign courseId
     const newSection = await Section.create({ sectionName, courseId });
 
-    // Update course to include the new section
-    const updatedCourse = await Course.findByIdAndUpdate(
-      courseId,
-      {
-        $push: { courseContent: newSection._id },
-      },
-      { new: true }
-    )
+    // Update course with new section reference
+    course.courseContent.push(newSection._id);
+    await course.save();
+
+    // Fetch updated course with populated sections
+    const updatedCourse = await Course.findById(courseId)
       .populate({
         path: "courseContent",
-        populate: { path: "subSection" },
+        populate: {
+          path: "subSection",
+        },
       })
       .exec();
-
-    // console.log("✅ Section Created Successfully:", newSection);
-    // console.log("✅ Updated Course:", updatedCourse);
 
     res.status(200).json({
       success: true,
@@ -52,7 +46,7 @@ export const createSection = async (req, res) => {
       updatedCourse,
     });
   } catch (error) {
-    // console.error("🔥 Server Error:", error);
+    console.error("🔥 Error creating section:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
