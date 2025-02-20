@@ -15,7 +15,7 @@ export const createSection = async (req, res) => {
       });
     }
 
-    console.log("📩 Received Request Data:", { sectionName, courseId });
+    // console.log("📩 Received Request Data:", { sectionName, courseId });
 
     // Check if the course exists
     const course = await Course.findById(courseId);
@@ -43,8 +43,8 @@ export const createSection = async (req, res) => {
       })
       .exec();
 
-    console.log("✅ Section Created Successfully:", newSection);
-    console.log("✅ Updated Course:", updatedCourse);
+    // console.log("✅ Section Created Successfully:", newSection);
+    // console.log("✅ Updated Course:", updatedCourse);
 
     res.status(200).json({
       success: true,
@@ -52,7 +52,7 @@ export const createSection = async (req, res) => {
       updatedCourse,
     });
   } catch (error) {
-    console.error("🔥 Server Error:", error);
+    // console.error("🔥 Server Error:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
