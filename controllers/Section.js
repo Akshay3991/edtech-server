@@ -1,9 +1,7 @@
 import { Section } from "../models/Section.js"
 import { Course } from "../models/Course.js"
 import { SubSection } from "../models/Subsection.js"
-// CREATE a new section
-import Course from "../models/Course.js";
-import Section from "../models/Section.js";
+
 
 export const createSection = async (req, res) => {
   try {
