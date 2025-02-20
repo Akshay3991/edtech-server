@@ -1,6 +1,6 @@
-import {Section} from "../models/Section.js"
-import {Course} from "../models/Course.js"
-import {SubSection } from "../models/Subsection.js"
+import { Section } from "../models/Section.js"
+import { Course } from "../models/Course.js"
+import { SubSection } from "../models/Subsection.js"
 // CREATE a new section
 export const createSection = async (req, res) => {
   try {
