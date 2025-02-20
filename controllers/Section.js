@@ -7,7 +7,6 @@ export const createSection = async (req, res) => {
   try {
     const { sectionName, courseId } = req.body;
 
-    // Validate request data
     if (!sectionName || !courseId) {
       return res.status(400).json({
         success: false,
@@ -15,48 +14,36 @@ export const createSection = async (req, res) => {
       });
     }
 
-    // Check if course exists
-    const course = await Course.findById(courseId);
-    if (!course) {
-      return res.status(404).json({
-        success: false,
-        message: "Course not found",
-      });
-    }
-
-    // Create new section and link it to the course
     const newSection = await Section.create({ sectionName });
 
-    // Push new section into the course's courseContent array
-    course.courseContent.push(newSection._id);
-    await course.save();
-
-    // Fetch the updated course with populated sections
-    const updatedCourse = await Course.findById(courseId)
+    const updatedCourse = await Course.findByIdAndUpdate(
+      courseId,
+      { $push: { courseContent: newSection._id } },
+      { new: true }
+    )
       .populate({
         path: "courseContent",
-        populate: {
-          path: "subSection",
-        },
+        populate: { path: "subSection" },
       })
       .exec();
 
-    // console.log("✅ Updated Course:", updatedCourse); // Debugging Log
+    // console.log("✅ Updated Course:", updatedCourse);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Section created successfully",
       updatedCourse,
     });
   } catch (error) {
-    // console.error("🔥 Error creating section:", error);
-    res.status(500).json({
+    console.error("❌ CREATE SECTION ERROR:", error);
+    return res.status(500).json({
       success: false,
       message: "Internal server error",
       error: error.message,
     });
   }
 };
+
 
 
 // UPDATE a section
