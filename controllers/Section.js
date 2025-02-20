@@ -2,6 +2,9 @@ import { Section } from "../models/Section.js"
 import { Course } from "../models/Course.js"
 import { SubSection } from "../models/Subsection.js"
 // CREATE a new section
+import Course from "../models/Course.js";
+import Section from "../models/Section.js";
+
 export const createSection = async (req, res) => {
   try {
     const { sectionName, courseId } = req.body;
@@ -23,14 +26,14 @@ export const createSection = async (req, res) => {
       });
     }
 
-    // Create new section and assign courseId
-    const newSection = await Section.create({ sectionName, courseId });
+    // Create new section and link it to the course
+    const newSection = await Section.create({ sectionName });
 
-    // Update course with new section reference
+    // Push new section into the course's courseContent array
     course.courseContent.push(newSection._id);
     await course.save();
 
-    // Fetch updated course with populated sections
+    // Fetch the updated course with populated sections
     const updatedCourse = await Course.findById(courseId)
       .populate({
         path: "courseContent",
@@ -40,13 +43,15 @@ export const createSection = async (req, res) => {
       })
       .exec();
 
+    // console.log("✅ Updated Course:", updatedCourse); // Debugging Log
+
     res.status(200).json({
       success: true,
       message: "Section created successfully",
       updatedCourse,
     });
   } catch (error) {
-    console.error("🔥 Error creating section:", error);
+    // console.error("🔥 Error creating section:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -54,6 +59,7 @@ export const createSection = async (req, res) => {
     });
   }
 };
+
 
 // UPDATE a section
 export const updateSection = async (req, res) => {

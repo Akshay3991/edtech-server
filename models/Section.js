@@ -1,14 +1,14 @@
 import mongoose from "mongoose";
 
 // Define the Section schema
-const sectionSchema = new mongoose.Schema({
+const SectionSchema = new mongoose.Schema({
 	sectionName: {
 		type: String,
+		required: true,
 	},
 	subSection: [
 		{
 			type: mongoose.Schema.Types.ObjectId,
-			required: true,
 			ref: "SubSection",
 		},
 	],
