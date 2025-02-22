@@ -1,10 +1,9 @@
-// Import the Mongoose library
-import mongoose from "mongoose"
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
-// Define the user schema using the Mongoose Schema constructor
+// Define the user schema
 const userSchema = new mongoose.Schema(
   {
-    // Define the name field with type String, required, and trimmed
     firstName: {
       type: String,
       required: true,
@@ -15,19 +14,16 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    // Define the email field with type String, required, and trimmed
     email: {
       type: String,
       required: true,
       trim: true,
+      unique: true,
     },
-
-    // Define the password field with type String and required
     password: {
       type: String,
       required: true,
     },
-    // Define the role field with type String and enum values of "Admin", "Student", or "Visitor"
     accountType: {
       type: String,
       enum: ["Admin", "Student", "Instructor"],
@@ -64,14 +60,29 @@ const userSchema = new mongoose.Schema(
     courseProgress: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "courseProgress",
+        ref: "CourseProgress",
       },
     ],
-
-    // Add timestamps for when the document is created and last modified
   },
   { timestamps: true }
-)
+);
 
-// Export the Mongoose model for the user schema
+// Hash password before saving
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Method to compare passwords
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+// Export the User model
 export const User = mongoose.model("User", userSchema);
