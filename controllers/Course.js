@@ -1,10 +1,10 @@
-import {Course}  from "../models/Course.js"
-import {Category}  from "../models/Category.js"
-import {Section}  from "../models/Section.js"
-import {SubSection}  from "../models/Subsection.js"
-import { User} from "../models/User.js"
+import { Course } from "../models/Course.js"
+import { Category } from "../models/Category.js"
+import { Section } from "../models/Section.js"
+import { SubSection } from "../models/Subsection.js"
+import { User } from "../models/User.js"
 import { uploadImageToCloudinary } from "../utils/imageUploader.js"
-import {CourseProgress } from "../models/CourseProgress.js"
+import { CourseProgress } from "../models/CourseProgress.js"
 import { convertSecondsToDuration } from "../utils/secToDuration.js"
 // Function to create a new course
 export const createCourse = async (req, res) => {
@@ -134,71 +134,64 @@ export const createCourse = async (req, res) => {
 // Edit Course Details
 export const editCourse = async (req, res) => {
   try {
-    const { courseId } = req.body
-    const updates = req.body
-    const course = await Course.findById(courseId)
+    const { courseId } = req.body;
+    const updates = req.body;
 
+    if (!courseId) {
+      return res.status(400).json({ success: false, error: "courseId is required" });
+    }
+
+    const course = await Course.findById(courseId);
     if (!course) {
-      return res.status(404).json({ error: "Course not found" })
+      return res.status(404).json({ error: "Course not found" });
     }
 
     // If Thumbnail Image is found, update it
-    if (req.files) {
-      // console.log("thumbnail update")
-      const thumbnail = req.files.thumbnailImage
-      const thumbnailImage = await uploadImageToCloudinary(
-        thumbnail,
-        process.env.FOLDER_NAME
-      )
-      course.thumbnail = thumbnailImage.secure_url
-    }
-
-    // Update only the fields that are present in the request body
-    for (const key in updates) {
-      if (updates.hasOwnProperty(key)) {
-        if (key === "tag" || key === "instructions") {
-          course[key] = JSON.parse(updates[key])
-        } else {
-          course[key] = updates[key]
-        }
+    if (req.files && req.files.thumbnailImage) {
+      try {
+        const thumbnailImage = await uploadImageToCloudinary(
+          req.files.thumbnailImage,
+          process.env.FOLDER_NAME
+        );
+        course.thumbnail = thumbnailImage.secure_url;
+      } catch (err) {
+        return res.status(500).json({ success: false, error: "Image upload failed" });
       }
     }
 
-    await course.save()
+    // Update only the fields that are present in the request body
+    Object.keys(updates).forEach((key) => {
+      if (key === "tag" || key === "instructions") {
+        course[key] = JSON.parse(updates[key]);
+      } else {
+        course[key] = updates[key];
+      }
+    });
 
-    const updatedCourse = await Course.findOne({
-      _id: courseId,
-    })
-      .populate({
-        path: "instructor",
-        populate: {
-          path: "additionalDetails",
-        },
-      })
+    await course.save();
+
+    const updatedCourse = await Course.findOne({ _id: courseId })
+      .populate({ path: "instructor", populate: { path: "additionalDetails" } })
       .populate("category")
       .populate("ratingAndReviews")
-      .populate({
-        path: "courseContent",
-        populate: {
-          path: "subSection",
-        },
-      })
-      .exec()
+      .populate({ path: "courseContent", populate: { path: "subSection" } })
+      .lean(); // Convert to plain JS object for efficiency
 
     res.json({
       success: true,
       message: "Course updated successfully",
       data: updatedCourse,
-    })
+    });
   } catch (error) {
-    console.error(error)
+    console.error(error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
       error: error.message,
-    })
+    });
   }
-}
+};
+
 // Get Course List
 export const getAllCourses = async (req, res) => {
   try {
