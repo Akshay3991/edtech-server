@@ -7,7 +7,7 @@ const courseProgress = new mongoose.Schema({
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "user",
+    ref: "User",
   },
   completedVideos: [
     {
@@ -17,4 +17,4 @@ const courseProgress = new mongoose.Schema({
   ],
 })
 
-export const CourseProgress = mongoose.model("courseProgress", courseProgress)
+export const CourseProgress = mongoose.model("CourseProgress", courseProgress)
