@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken"
 import otpGenerator from "otp-generator"
 import { passwordUpdated } from "../mail/templates/passwordUpdate.js"
 import { OTP } from "../models/OTP.js"
-import Profile from "../models/Profile.js"
+import { Profile } from "../models/Profile.js"
 import { User } from "../models/User.js"
 import mailSender from "../utils/mailSender.js"
 dotenv.config()
