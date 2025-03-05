@@ -118,72 +118,68 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
   try {
     // Get email and password from request body
-    const { email, password } = req.body;
+    const { email, password } = req.body
 
-    // ✅ Validate input fields
+    // Check if email or password is missing
     if (!email || !password) {
+      // Return 400 Bad Request status code with error message
       return res.status(400).json({
         success: false,
-        message: "Please provide both email and password",
-      });
+        message: `Please Fill up All the Required Fields`,
+      })
     }
 
-    // ✅ Find user by email
-    const user = await User.findOne({ email }).populate("additionalDetails");
+    // Find user with provided email
+    const user = await User.findOne({ email }).populate("additionalDetails")
 
+    // If user not found with provided email
     if (!user) {
+      // Return 401 Unauthorized status code with error message
       return res.status(401).json({
         success: false,
-        message: "User not found. Please sign up first.",
-      });
+        message: `User is not Registered with Us Please SignUp to Continue`,
+      })
     }
 
-    // ✅ Compare provided password with hashed password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    // Generate JWT token and Compare Password
+    if (await bcrypt.compare(password, user.password)) {
+      const token = jwt.sign(
+        { email: user.email, id: user._id, role: user.role },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "24h",
+        }
+      )
 
-    if (!isPasswordValid) {
+      // Save token to user document in database
+      user.token = token
+      user.password = undefined
+      // Set cookie for token and return success response
+      const options = {
+        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        httpOnly: true,
+      }
+      res.cookie("token", token, options).status(200).json({
+        success: true,
+        token,
+        user,
+        message: `User Login Success`,
+      })
+    } else {
       return res.status(401).json({
         success: false,
-        message: "Incorrect password",
-      });
+        message: `Password is incorrect`,
+      })
     }
-
-    // ✅ Generate JWT Token
-    const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.accountType },
-      process.env.JWT_SECRET,
-      { expiresIn: "24h" }
-    );
-
-    // ✅ Set token in a secure HTTP-only cookie
-    const cookieOptions = {
-      expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days
-      httpOnly: true, // Prevent client-side JavaScript access
-      secure: process.env.NODE_ENV === "production", // Secure only in production
-      sameSite: "strict",
-    };
-
-    res.cookie("token", token, cookieOptions);
-
-    // ✅ Remove password before sending response
-    user.password = undefined;
-
-    // ✅ Send success response
-    return res.status(200).json({
-      success: true,
-      message: "Login successful",
-      token,
-      user,
-    });
-
   } catch (error) {
-    console.error("Login Error:", error);
+    console.error(error)
+    // Return 500 Internal Server Error status code with error message
     return res.status(500).json({
       success: false,
-      message: "Internal Server Error. Please try again later.",
-    });
+      message: `Login Failure Please Try Again`,
+    })
   }
-};
+}
 // Send OTP For Email Verification
 export const sendotp = async (req, res) => {
   try {
