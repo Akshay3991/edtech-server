@@ -1,7 +1,7 @@
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
-import CloudinaryStorage from "multer-storage-cloudinary";
-import dotenv from "dotenv"
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import dotenv from "dotenv";
 dotenv.config();
 
 cloudinary.config({
@@ -10,11 +10,12 @@ cloudinary.config({
     api_secret: process.env.CLOUD_API_SECRET,
 });
 
-const storage = new CloudinaryStorage.CloudinaryStorage({
-    cloudinary,
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
     params: {
         folder: "products",
-        allowed_formats: ["jpg", "png", "jpeg"],
+        format: async (req, file) => "png", // Supports 'jpeg', 'png', etc.
+        public_id: (req, file) => file.originalname.split(".")[0], // Use filename as public_id
     },
 });
 
