@@ -65,7 +65,7 @@ app.get("/api/v1/test", (req, res) => {
 });
 
 app.use("/api/v1/auth", userRoutes);
-app.use("/api/v1/marketplace", productRoutes);
+app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/course", courseRoutes);
 app.use("/api/v1/payment", paymentRoutes);
