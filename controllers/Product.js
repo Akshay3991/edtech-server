@@ -1,22 +1,9 @@
 import { Product } from "../models/Product.js";
+import { uploadImageToCloudinary } from "../utils/imageUploader.js"
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 
-export const uploadImage = async (req, res) => {
-    try {
-        console.log("Received file:", req.file); // ✅ Debugging Step
 
-        if (!req.file) {
-            return res.status(400).json({ message: "No file uploaded" });
-        }
-
-        const result = await cloudinaryV2.uploader.upload(req.file.path);
-        res.status(200).json({ secure_url: result.secure_url });
-    } catch (error) {
-        console.error("Image upload error:", error);
-        res.status(500).json({ message: "Image upload failed", error });
-    }
-};
 
 
 // 🔹 Get All Products
@@ -47,20 +34,20 @@ export const getProductById = async (req, res) => {
 // 🔹 Add Product
 export const addProduct = async (req, res) => {
     try {
-        let imageUrl = req.body.image || ""; // ✅ Use provided URL or upload new file
+        let imageUrl = req.body.image;
 
-        if (req.file) {
-            const result = await cloudinary.uploader.upload(req.file.path);
-            fs.unlinkSync(req.file.path);
-            imageUrl = result.secure_url;
-        }
+        // Upload the Image to Cloudinary
+        const productImage = await uploadImageToCloudinary(
+            imageUrl,
+            'Products'
+        )
 
         const { name, price } = req.body;
         if (!name || !price) {
             return res.status(400).json({ message: "Name and price are required" });
         }
 
-        const newProduct = new Product({ name, price, image: imageUrl });
+        const newProduct = new Product({ name, price, image: productImage.secure_url });
         await newProduct.save();
 
         res.status(201).json(newProduct);
