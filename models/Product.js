@@ -2,11 +2,23 @@ import mongoose from "mongoose";
 
 const ProductSchema = new mongoose.Schema(
     {
-        name: { type: String, required: true },
-        price: { type: Number, required: true },
-        image: { type: String, required: true }, // Store Cloudinary URL
+        name: {
+            type: String,
+            required: [true, "Product name is required"],
+            trim: true
+        },
+        price: {
+            type: Number,
+            required: [true, "Price is required"],
+            min: [0, "Price cannot be negative"]
+        },
+        image: {
+            type: String,
+            required: [true, "Product image is required"],
+            trim: true
+        } // ✅ Store Cloudinary URL
     },
-    { timestamps: true }
+    { timestamps: true } // ✅ Automatically adds `createdAt` & `updatedAt`
 );
 
 export const Product = mongoose.model("Product", ProductSchema);

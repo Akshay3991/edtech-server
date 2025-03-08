@@ -1,29 +1,37 @@
-import multer from 'multer';
-import { v2 as cloudinaryV2 } from 'cloudinary';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import multer from "multer";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 import dotenv from "dotenv";
+
 dotenv.config();
 
-
-cloudinaryV2.config({
+// ✅ Cloudinary Configuration
+cloudinary.config({
     cloud_name: process.env.CLOUD_NAME,
     api_key: process.env.CLOUD_API_KEY,
     api_secret: process.env.CLOUD_API_SECRET,
 });
 
+// ✅ Cloudinary Storage Setup
 const storage = new CloudinaryStorage({
-    cloudinary: cloudinaryV2,
+    cloudinary,
     params: {
-        folder: "products", // Optional: Folder name in Cloudinary
-        allowedFormats: ["jpg", "png", "jpeg"], // Optional: Format of the uploaded file
-        public_id: (req, file) => file.originalname.split(".")[0], // Use filename as public_id 
+        folder: "products", // Cloudinary folder for product images
+        format: async (req, file) => "png", // Convert to PNG for consistency
+        public_id: (req, file) => `${file.originalname.split(".")[0]}_${Date.now()}`, // Ensure uniqueness
     },
 });
 
-const upload = multer({ storage });
+// ✅ Multer Upload Middleware
+const upload = multer({
+    storage,
+    fileFilter: (req, file, cb) => {
+        if (!file.mimetype.startsWith("image/")) {
+            return cb(new Error("Only image files are allowed!"), false);
+        }
+        cb(null, true);
+    },
+    limits: { fileSize: 5 * 1024 * 1024 }, // ✅ Limit file size to 5MB
+});
 
 export default upload;
-
-
-
-
