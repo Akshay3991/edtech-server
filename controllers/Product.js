@@ -2,6 +2,17 @@ import { Product } from "../models/Product.js";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 
+// Upload Image to Cloudinary
+const uploadImageToCloudinary = async (file) => {
+    try {
+        const result = await cloudinary.v2.uploader.upload(file.path);
+        fs.unlinkSync(file.path); // Remove local file after upload
+        return result.secure_url;
+    } catch (error) {
+        throw new Error("Image upload failed.");
+    }
+};
+
 export const getAllProducts = async (req, res) => {
     try {
         const products = await Product.find();
@@ -21,36 +32,33 @@ export const getProductById = async (req, res) => {
     }
 };
 
+// Add Product Controller
 export const addProduct = async (req, res) => {
     try {
-        let imageUrl = req.body.image; // If an image URL is provided
+        let imageUrl = req.body.image; // Default to URL if provided
 
-        // If an image file is uploaded, upload it to Cloudinary
         if (req.file) {
-            const result = await cloudinary.uploader.upload(req.file.path);
-            imageUrl = result.secure_url;
-            fs.unlinkSync(req.file.path); // Remove local file after upload
+            imageUrl = await uploadImageToCloudinary(req.file);
         }
 
         const { name, price } = req.body;
         const newProduct = new Product({ name, price, image: imageUrl });
-        await newProduct.save();
 
+        await newProduct.save();
         res.status(201).json(newProduct);
     } catch (error) {
-        res.status(400).json({ message: "Invalid data", error });
+        res.status(400).json({ message: error.message });
     }
 };
 
+
+// Update Product Controller
 export const updateProduct = async (req, res) => {
     try {
-        let imageUrl = req.body.image; // Default to existing image URL
+        let imageUrl = req.body.image; // Use existing image URL if not uploading new file
 
-        // If an image file is uploaded, upload it to Cloudinary
         if (req.file) {
-            const result = await cloudinary.uploader.upload(req.file.path);
-            imageUrl = result.secure_url;
-            fs.unlinkSync(req.file.path);
+            imageUrl = await uploadImageToCloudinary(req.file);
         }
 
         const updatedProduct = await Product.findByIdAndUpdate(
@@ -63,9 +71,10 @@ export const updateProduct = async (req, res) => {
 
         res.json(updatedProduct);
     } catch (error) {
-        res.status(500).json({ message: "Server error", error });
+        res.status(500).json({ message: error.message });
     }
 };
+
 
 export const deleteProduct = async (req, res) => {
     try {
