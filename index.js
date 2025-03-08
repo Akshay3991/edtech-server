@@ -5,6 +5,7 @@ import profileRoutes from "./routes/profile.js";
 import courseRoutes from "./routes/Course.js";
 import paymentRoutes from "./routes/Payments.js";
 import contactUsRoute from "./routes/Contact.js";
+import productRoutes from "./routes/productRoutes.js"
 import { connect } from "./config/database.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -64,7 +65,7 @@ app.get("/api/v1/test", (req, res) => {
 });
 
 app.use("/api/v1/auth", userRoutes);
-app.use("/api/v1/marketplace", marketRoutes);
+app.use("/api/v1/marketplace", productRoutes);
 app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/course", courseRoutes);
 app.use("/api/v1/payment", paymentRoutes);
