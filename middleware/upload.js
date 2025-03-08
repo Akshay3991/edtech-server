@@ -1,23 +1,23 @@
-import multer from "multer";
 import cloudinary from 'cloudinary';
-import pkg from 'multer-storage-cloudinary';
+import { v2 as cloudinaryV2 } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import dotenv from "dotenv";
 dotenv.config();
 
 const { CloudinaryStorage } = pkg;
 
-cloudinary.config({
+cloudinaryV2.config({
     cloud_name: process.env.CLOUD_NAME,
     api_key: process.env.CLOUD_API_KEY,
     api_secret: process.env.CLOUD_API_SECRET,
 });
 
 const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
+    cloudinary: cloudinaryV2,
     params: {
-        folder: "products",
-        format: async (req, file) => "png", // Supports 'jpeg', 'png', etc.
-        public_id: (req, file) => file.originalname.split(".")[0], // Use filename as public_id
+        folder: 'uploads', // Optional: Folder name in Cloudinary
+        format: async (req, file) => 'png', // Optional: Format of the uploaded file
+        public_id: (req, file) => `file_${Date.now()}`, // Optional: Unique public ID
     },
 });
 
