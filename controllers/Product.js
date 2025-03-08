@@ -34,7 +34,7 @@ export const getProductById = async (req, res) => {
 // 🔹 Add Product
 export const addProduct = async (req, res) => {
     try {
-        let imageUrl = req.body.image;
+        let imageUrl = req.files.image;
 
         // Upload the Image to Cloudinary
         const productImage = await uploadImageToCloudinary(
