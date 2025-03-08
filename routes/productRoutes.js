@@ -1,5 +1,5 @@
 import express from "express";
-import upload from "../middleware/upload.js"; // ✅ Import middleware
+import upload from "../middleware/upload.js";
 import {
     getAllProducts,
     getProductById,
@@ -11,14 +11,13 @@ import {
 
 const router = express.Router();
 
-// ✅ Standardized route names
-router.get("/products", getAllProducts);
-router.get("/products/:id", getProductById);
-router.post("/products", upload.single("file"), addProduct);
-router.put("/products/:id", upload.single("file"), updateProduct);
-router.delete("/products/:id", deleteProduct);
+router.get("/getproducts", getAllProducts);
+router.get("/getproducts/:id", getProductById);
+router.post("/addproducts", upload.single("file"), addProduct);
+router.put("/updateproducts/:id", upload.single("file"), updateProduct);
+router.delete("/deleteproducts/:id", deleteProduct);
 
-// ✅ Image Upload Route (separate from product upload)
-router.post("/products/upload", upload.single("file"), uploadImage);
+// ✅ Image Upload Route (Check `file` key)
+router.post("/upload", upload.single("file"), uploadImage);
 
 export default router;

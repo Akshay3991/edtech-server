@@ -2,22 +2,22 @@ import { Product } from "../models/Product.js";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 
-// 🔹 Upload Image to Cloudinary
 export const uploadImage = async (req, res) => {
     try {
+        console.log("Received file:", req.file); // ✅ Debugging Step
+
         if (!req.file) {
             return res.status(400).json({ message: "No file uploaded" });
         }
 
-        const result = await cloudinary.uploader.upload(req.file.path);
-        fs.unlinkSync(req.file.path); // ✅ Remove local file after upload
-
+        const result = await cloudinaryV2.uploader.upload(req.file.path);
         res.status(200).json({ secure_url: result.secure_url });
     } catch (error) {
-        console.error("Cloudinary Upload Error:", error);
+        console.error("Image upload error:", error);
         res.status(500).json({ message: "Image upload failed", error });
     }
 };
+
 
 // 🔹 Get All Products
 export const getAllProducts = async (req, res) => {
