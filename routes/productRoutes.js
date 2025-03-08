@@ -6,14 +6,18 @@ import {
     addProduct,
     updateProduct,
     deleteProduct,
+    uploadImage
 } from "../controllers/Product.js";
 
 const router = express.Router();
 
-router.get("/products", getAllProducts);
-router.get("/products/:id", getProductById);
-router.post("/products", upload.single("file"), addProduct);
-router.put("/products/:id", upload.single("file"), updateProduct);
-router.delete("/products/:id", deleteProduct);
+router.get("/getproducts", getAllProducts);
+router.get("/getproducts/:id", getProductById);
+router.post("/addproducts", upload.single("file"), addProduct);
+router.put("/updateproducts/:id", upload.single("file"), updateProduct);
+router.delete("/deleteproducts/:id", deleteProduct);
+
+// ✅ Image Upload Route
+router.post("/products/upload", upload.single("file"), uploadImage);
 
 export default router;

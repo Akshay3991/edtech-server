@@ -2,14 +2,20 @@ import { Product } from "../models/Product.js";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 
+
 // Upload Image to Cloudinary
-const uploadImageToCloudinary = async (file) => {
+export const uploadImageToCloudinary = async (req, res) => {
     try {
-        const result = await cloudinary.v2.uploader.upload(file.path);
-        fs.unlinkSync(file.path); // Remove local file after upload
-        return result.secure_url;
+        if (!req.file) {
+            return res.status(400).json({ message: "No file uploaded" });
+        }
+
+        const result = await cloudinary.uploader.upload(req.file.path);
+        fs.unlinkSync(req.file.path); // Remove local file after upload
+
+        res.status(200).json({ secure_url: result.secure_url });
     } catch (error) {
-        throw new Error("Image upload failed.");
+        res.status(500).json({ message: "Image upload failed", error });
     }
 };
 
