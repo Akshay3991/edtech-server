@@ -14,9 +14,9 @@ cloudinaryV2.config({
 const storage = new CloudinaryStorage({
     cloudinary: cloudinaryV2,
     params: {
-        folder: 'uploads', // Optional: Folder name in Cloudinary
-        format: async (req, file) => 'png', // Optional: Format of the uploaded file
-        public_id: (req, file) => `file_${Date.now()}`, // Optional: Unique public ID
+        folder: "products", // Optional: Folder name in Cloudinary
+        allowedFormats: ["jpg", "png", "jpeg"], // Optional: Format of the uploaded file
+        public_id: (req, file) => file.originalname.split(".")[0], // Use filename as public_id 
     },
 });
 
