@@ -1,7 +1,7 @@
 import multer from "multer";
-import cloudinaryModule from "multer-storage-cloudinary";
 import { v2 as cloudinary } from "cloudinary";
-import dotenv from "dotenv";
+import CloudinaryStorage from "multer-storage-cloudinary";
+import dotenv from "dotenv"
 dotenv.config();
 
 cloudinary.config({
@@ -10,9 +10,7 @@ cloudinary.config({
     api_secret: process.env.CLOUD_API_SECRET,
 });
 
-const { CloudinaryStorage } = cloudinaryModule;
-
-const storage = new CloudinaryStorage({
+const storage = new CloudinaryStorage.CloudinaryStorage({
     cloudinary,
     params: {
         folder: "products",
