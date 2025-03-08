@@ -18,6 +18,6 @@ router.put("/updateproducts/:id", upload.single("file"), updateProduct);
 router.delete("/deleteproducts/:id", deleteProduct);
 
 // ✅ Image Upload Route
-router.post("/products/upload", upload.single("file"), uploadImageToCloudinary);
+router.post("/upload", upload.single("file"), uploadImageToCloudinary);
 
 export default router;
