@@ -1,5 +1,5 @@
 import { Product } from "../models/Product.js";
-import cloudinary from "cloudinary";
+import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 
 export const getAllProducts = async (req, res) => {
@@ -23,17 +23,19 @@ export const getProductById = async (req, res) => {
 
 export const addProduct = async (req, res) => {
     try {
-        let imageUrl = req.body.image;
+        let imageUrl = req.body.image; // If an image URL is provided
 
+        // If an image file is uploaded, upload it to Cloudinary
         if (req.file) {
-            const result = await cloudinary.v2.uploader.upload(req.file.path);
+            const result = await cloudinary.uploader.upload(req.file.path);
             imageUrl = result.secure_url;
-            fs.unlinkSync(req.file.path); // Remove the file from local storage
+            fs.unlinkSync(req.file.path); // Remove local file after upload
         }
 
         const { name, price } = req.body;
         const newProduct = new Product({ name, price, image: imageUrl });
         await newProduct.save();
+
         res.status(201).json(newProduct);
     } catch (error) {
         res.status(400).json({ message: "Invalid data", error });
@@ -42,16 +44,23 @@ export const addProduct = async (req, res) => {
 
 export const updateProduct = async (req, res) => {
     try {
-        let imageUrl = req.body.image;
+        let imageUrl = req.body.image; // Default to existing image URL
 
+        // If an image file is uploaded, upload it to Cloudinary
         if (req.file) {
-            const result = await cloudinary.v2.uploader.upload(req.file.path);
+            const result = await cloudinary.uploader.upload(req.file.path);
             imageUrl = result.secure_url;
             fs.unlinkSync(req.file.path);
         }
 
-        const updatedProduct = await Product.findByIdAndUpdate(req.params.id, { ...req.body, image: imageUrl }, { new: true });
+        const updatedProduct = await Product.findByIdAndUpdate(
+            req.params.id,
+            { ...req.body, image: imageUrl },
+            { new: true }
+        );
+
         if (!updatedProduct) return res.status(404).json({ message: "Product not found" });
+
         res.json(updatedProduct);
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
