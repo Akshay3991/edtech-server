@@ -60,17 +60,17 @@ export const addProduct = async (req, res) => {
 // 🔹 Update Product
 export const updateProduct = async (req, res) => {
     try {
-        let imageUrl = req.body.image || ""; // ✅ Use existing image if no new file
+        let imageUrl = req.files.image;
 
-        if (req.file) {
-            const result = await cloudinary.uploader.upload(req.file.path);
-            fs.unlinkSync(req.file.path);
-            imageUrl = result.secure_url;
-        }
+        // Upload the Image to Cloudinary
+        const productImage = await uploadImageToCloudinary(
+            imageUrl,
+            'Products'
+        )
 
         const updatedProduct = await Product.findByIdAndUpdate(
             req.params.id,
-            { ...req.body, image: imageUrl },
+            { ...req.body, image: productImage.secure_url },
             { new: true }
         );
 
