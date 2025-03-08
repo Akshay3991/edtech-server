@@ -6,7 +6,7 @@ import {
     addProduct,
     updateProduct,
     deleteProduct,
-    uploadImageToCloudinary
+    uploadImage
 } from "../controllers/Product.js";
 
 const router = express.Router();
@@ -18,6 +18,6 @@ router.put("/updateproducts/:id", upload.single("file"), updateProduct);
 router.delete("/deleteproducts/:id", deleteProduct);
 
 // ✅ Image Upload Route
-router.post("/upload", upload.single("file"), uploadImageToCloudinary);
+router.post("/upload", upload.single("file"), uploadImage);
 
 export default router;
