@@ -16,7 +16,12 @@ const ProductSchema = new mongoose.Schema(
             type: String,
             required: [true, "Product image is required"],
             trim: true
-        } // ✅ Store Cloudinary URL
+        }, // ✅ Store Cloudinary URL
+        description: {
+            type: String,
+            required: [true, "Product description is required"],
+            trim: true
+        } // ✅ Added description field
     },
     { timestamps: true } // ✅ Automatically adds `createdAt` & `updatedAt`
 );

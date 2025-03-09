@@ -1,10 +1,6 @@
 import { Product } from "../models/Product.js";
-import { uploadImageToCloudinary } from "../utils/imageUploader.js"
+import { uploadImageToCloudinary } from "../utils/imageUploader.js";
 import { v2 as cloudinary } from "cloudinary";
-import fs from "fs";
-
-
-
 
 // 🔹 Get All Products
 export const getAllProducts = async (req, res) => {
@@ -34,22 +30,22 @@ export const getProductById = async (req, res) => {
 // 🔹 Add Product
 export const addProduct = async (req, res) => {
     try {
-        let imageUrl = req.files.image;
-
-        // Upload the Image to Cloudinary
-        const productImage = await uploadImageToCloudinary(
-            imageUrl,
-            'Products'
-        )
-
-        const { name, price } = req.body;
-        if (!name || !price) {
-            return res.status(400).json({ message: "Name and price are required" });
+        const { name, price, description } = req.body;
+        if (!name || !price || !description || !req.files || !req.files.image) {
+            return res.status(400).json({ message: "Name, price, description, and image are required" });
         }
 
-        const newProduct = new Product({ name, price, image: productImage.secure_url });
-        await newProduct.save();
+        // Upload the Image to Cloudinary
+        const productImage = await uploadImageToCloudinary(req.files.image, "Products");
 
+        const newProduct = new Product({
+            name,
+            price,
+            description,
+            image: productImage.secure_url
+        });
+
+        await newProduct.save();
         res.status(201).json(newProduct);
     } catch (error) {
         console.error("Add Product Error:", error);
@@ -60,19 +56,16 @@ export const addProduct = async (req, res) => {
 // 🔹 Update Product
 export const updateProduct = async (req, res) => {
     try {
-        let imageUrl = req.files.image;
+        const { name, price, description } = req.body;
+        let updatedData = { name, price, description };
 
-        // Upload the Image to Cloudinary
-        const productImage = await uploadImageToCloudinary(
-            imageUrl,
-            'Products'
-        )
+        if (req.files && req.files.image) {
+            // Upload new image to Cloudinary
+            const productImage = await uploadImageToCloudinary(req.files.image, "Products");
+            updatedData.image = productImage.secure_url;
+        }
 
-        const updatedProduct = await Product.findByIdAndUpdate(
-            req.params.id,
-            { ...req.body, image: productImage.secure_url },
-            { new: true }
-        );
+        const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updatedData, { new: true });
 
         if (!updatedProduct) {
             return res.status(404).json({ message: "Product not found" });
