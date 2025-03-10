@@ -1,13 +1,14 @@
 import crypto from "crypto"
 import mongoose from "mongoose"
 import { instance } from "../config/razorpay.js"
+import { Product } from "../models/Product.js";
 import { courseEnrollmentEmail } from "../mail/templates/courseEnrollmentEmail.js"
 import { paymentSuccessEmail } from "../mail/templates/paymentSuccessEmail.js"
 import { Course } from "../models/Course.js"
 import { CourseProgress } from "../models/CourseProgress.js"
 import { User } from "../models/User.js"
 import mailSender from "../utils/mailSender.js"
-
+import { productPaymentEmail } from "../mail/templates/productPaymentEmail.js";
 // Capture the payment and initiate the Razorpay order
 export const capturePayment = async (req, res) => {
   const { courses } = req.body
@@ -195,3 +196,106 @@ const enrollStudents = async (courses, userId, res) => {
     }
   }
 }
+
+
+// Capture product payment and initiate Razorpay order
+export const captureProductPayment = async (req, res) => {
+  const { products } = req.body;
+  const userId = req.user.id;
+
+  if (!products || products.length === 0) {
+    return res.status(400).json({ success: false, message: "No products selected" });
+  }
+
+  let total_amount = 0;
+
+  for (const productId of products) {
+    let product;
+    try {
+      product = await Product.findById(productId);
+      if (!product) {
+        return res.status(404).json({ success: false, message: "Product not found" });
+      }
+
+      total_amount += product.price;
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  const options = {
+    amount: total_amount * 100, // Convert to paise
+    currency: "INR",
+    receipt: `order_${Date.now()}`,
+  };
+
+  try {
+    const paymentResponse = await instance.orders.create(options);
+    res.json({ success: true, data: paymentResponse });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Could not initiate payment." });
+  }
+};
+
+// Verify product payment
+export const verifyProductPayment = async (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, products } = req.body;
+  const userId = req.user.id;
+
+  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !products || !userId) {
+    return res.status(400).json({ success: false, message: "Invalid payment details" });
+  }
+
+  const generatedSignature = crypto
+    .createHmac("sha256", process.env.RAZORPAY_SECRET)
+    .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+    .digest("hex");
+
+  if (generatedSignature === razorpay_signature) {
+    await processProductOrder(products, userId);
+    return res.status(200).json({ success: true, message: "Payment Verified" });
+  }
+
+  return res.status(400).json({ success: false, message: "Payment Verification Failed" });
+};
+
+// Send Payment Success Email for Products
+export const sendProductPaymentEmail = async (req, res) => {
+  const { orderId, paymentId, amount } = req.body;
+  const userId = req.user.id;
+
+  if (!orderId || !paymentId || !amount || !userId) {
+    return res.status(400).json({ success: false, message: "Incomplete payment details" });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    await mailSender(
+      user.email,
+      "Payment Received - Product Purchase",
+      productPaymentEmail(user.firstName, amount / 100, orderId, paymentId)
+    );
+
+    res.status(200).json({ success: true, message: "Payment email sent successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Could not send payment email" });
+  }
+};
+
+// Process product order and update user purchase history
+const processProductOrder = async (products, userId) => {
+  for (const productId of products) {
+    try {
+      const purchasedProduct = await Product.findById(productId);
+      if (!purchasedProduct) continue;
+
+      await User.findByIdAndUpdate(
+        userId,
+        { $push: { purchasedProducts: productId } },
+        { new: true }
+      );
+    } catch (error) {
+      console.error("Error processing product order:", error);
+    }
+  }
+};

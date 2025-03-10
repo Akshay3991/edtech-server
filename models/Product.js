@@ -21,7 +21,26 @@ const ProductSchema = new mongoose.Schema(
             type: String,
             required: [true, "Product description is required"],
             trim: true
-        } // ✅ Added description field
+        },
+        category: {
+            type: String,
+            required: [true, "Product category is required"],
+            trim: true
+        }, // ✅ New category field
+        stock: {
+            type: Number,
+            required: [true, "Stock quantity is required"],
+            min: [0, "Stock cannot be negative"]
+        }, // ✅ Added stock management
+        sold: {
+            type: Number,
+            default: 0
+        }, // ✅ Track sold units
+        seller: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: [true, "Seller is required"]
+        } // ✅ Track product seller
     },
     { timestamps: true } // ✅ Automatically adds `createdAt` & `updatedAt`
 );
