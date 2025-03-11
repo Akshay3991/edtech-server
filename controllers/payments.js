@@ -200,37 +200,43 @@ const enrollStudents = async (courses, userId, res) => {
 
 // Capture product payment and initiate Razorpay order
 export const captureProductPayment = async (req, res) => {
-  const { productId } = req.body;
+  let { products } = req.body; // Accept products from request
+  const userId = req.user.id;
 
+  // Convert a single product ID into an array for consistency
+  if (!Array.isArray(products)) {
+    products = [products];
+  }
 
+  if (!products || products.length === 0) {
+    return res.status(400).json({ success: false, message: "No products selected" });
+  }
 
   let total_amount = 0;
 
-  let product;
   try {
-    product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ success: false, message: "Product not found" });
+    for (const productId of products) {
+      const product = await Product.findById(productId);
+      if (!product) {
+        return res.status(404).json({ success: false, message: "Product not found" });
+      }
+      total_amount += product.price;
     }
 
-    total_amount += product.price;
+    const options = {
+      amount: total_amount * 100, // Convert to paise
+      currency: "INR",
+      receipt: `order_${Date.now()}`,
+    };
+
+    const paymentResponse = await instance.orders.create(options);
+    return res.json({ success: true, data: paymentResponse });
+
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
-
-  const options = {
-    amount: total_amount * 100, // Convert to paise
-    currency: "INR",
-    receipt: `order_${Date.now()}`,
-  };
-
-  try {
-    const paymentResponse = await instance.orders.create(options);
-    res.json({ success: true, data: paymentResponse });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Could not initiate payment." });
-  }
 };
+
 
 // Verify product payment
 export const verifyProductPayment = async (req, res) => {
