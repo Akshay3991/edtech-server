@@ -22,97 +22,73 @@ export const signup = async (req, res) => {
       confirmPassword,
       accountType,
       contactNumber,
-      // otp,
-    } = req.body
-    // Check if All Details are there or not
-    if (
-      !firstName ||
-      !lastName ||
-      !email ||
-      !password ||
-      !confirmPassword
-      // ||
-      // !otp
-    ) {
+    } = req.body;
+
+    // Check if all required fields are provided
+    if (!firstName || !lastName || !email || !password || !confirmPassword) {
       return res.status(403).send({
         success: false,
-        message: "All Fields are required",
-      })
+        message: "All fields are required",
+      });
     }
+
     // Check if password and confirm password match
     if (password !== confirmPassword) {
       return res.status(400).json({
         success: false,
-        message:
-          "Password and Confirm Password do not match. Please try again.",
-      })
+        message: "Password and Confirm Password do not match.",
+      });
     }
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email })
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
         success: false,
         message: "User already exists. Please sign in to continue.",
-      })
+      });
     }
 
-    // Find the most recent OTP for the email
-    // const response = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1)
-    // console.log(response)
-    // if (response.length === 0) {
-    // OTP not found for the email
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "The OTP is not valid",
-    //   })
-    // } else if (otp !== response[0].otp) {
-    //   // Invalid OTP
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "The OTP is not valid",
-    //   })
-    // }
-
     // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10)
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create the user
-    let approved = ""
-    approved === "Instructor" ? (approved = false) : (approved = true)
+    // Determine approval status (Sellers require admin approval)
+    let approved = accountType === "Instructor" || accountType === "Seller" ? false : true;
 
-    // Create the Additional Profile For User
+    // Create the Additional Profile for User
     const profileDetails = await Profile.create({
       gender: null,
       dateOfBirth: null,
       about: null,
-      contactNumber: null,
-    })
+      contactNumber: contactNumber || null,
+    });
+
+    // Create the User without sellerId
     const user = await User.create({
       firstName,
       lastName,
       email,
       contactNumber,
       password: hashedPassword,
-      accountType: accountType,
-      approved: approved,
+      accountType,
+      approved,
       additionalDetails: profileDetails._id,
       image: "",
-    })
+    });
 
     return res.status(200).json({
       success: true,
       user,
-      message: "User registered successfully",
-    })
+      message: "User registered successfully. Admin approval required if registering as Seller.",
+    });
   } catch (error) {
-    // console.error(error)
     return res.status(500).json({
       success: false,
       message: "User cannot be registered. Please try again.",
-    })
+    });
   }
-}
+};
+
 
 // Login controller for authenticating users
 export const login = async (req, res) => {

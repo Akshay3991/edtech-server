@@ -13,23 +13,21 @@ const auth = async (req, res, next) => {
     const token =
       req.cookies.token ||
       req.body.token ||
-      req.header("Authorization").replace("Bearer ", "");
+      req.header("Authorization")?.replace("Bearer ", "");
 
     // If JWT is missing, return 401 Unauthorized response
     if (!token) {
-      return res.status(401).json({ success: false, message: `Token Missing` });
+      return res.status(401).json({ success: false, message: "Token Missing" });
     }
 
     try {
       // Verifying the JWT using the secret key stored in environment variables
-      const decode = await jwt.verify(token, process.env.JWT_SECRET);
+      const decode = jwt.verify(token, process.env.JWT_SECRET);
       // Storing the decoded JWT payload in the request object for further use
       req.user = decode;
     } catch (error) {
       // If JWT verification fails, return 401 Unauthorized response
-      return res
-        .status(401)
-        .json({ success: false, message: "token is invalid" });
+      return res.status(401).json({ success: false, message: "Token is invalid" });
     }
 
     // If JWT is valid, move on to the next middleware or request handler
@@ -38,7 +36,7 @@ const auth = async (req, res, next) => {
     // If there is an error during the authentication process, return 401 Unauthorized response
     return res.status(401).json({
       success: false,
-      message: `Something Went Wrong While Validating the Token`,
+      message: "Something Went Wrong While Validating the Token",
     });
   }
 };
@@ -46,58 +44,69 @@ const auth = async (req, res, next) => {
 // Check if the user is a Student
 const isStudent = async (req, res, next) => {
   try {
-    const userDetails = await User.findOne({ email: req.user.email });
+    const userDetails = await User.findById(req.user.id);
 
     if (userDetails.accountType !== "Student") {
-      return res.status(401).json({
+      return res.status(403).json({
         success: false,
-        message: "This is a Protected Route for Students",
+        message: "Access Denied: Protected Route for Students",
       });
     }
     next();
   } catch (error) {
-    return res
-      .status(500)
-      .json({ success: false, message: `User Role Can't be Verified` });
+    return res.status(500).json({ success: false, message: "User Role Can't be Verified" });
   }
 };
 
 // Check if the user is an Admin
 const isAdmin = async (req, res, next) => {
   try {
-    const userDetails = await User.findOne({ email: req.user.email });
+    const userDetails = await User.findById(req.user.id);
 
     if (userDetails.accountType !== "Admin") {
-      return res.status(401).json({
+      return res.status(403).json({
         success: false,
-        message: "This is a Protected Route for Admin",
+        message: "Access Denied: Protected Route for Admins",
       });
     }
     next();
   } catch (error) {
-    return res
-      .status(500)
-      .json({ success: false, message: `User Role Can't be Verified` });
+    return res.status(500).json({ success: false, message: "User Role Can't be Verified" });
   }
 };
 
 // Check if the user is an Instructor
 const isInstructor = async (req, res, next) => {
   try {
-    const userDetails = await User.findOne({ email: req.user.email });
+    const userDetails = await User.findById(req.user.id);
 
     if (userDetails.accountType !== "Instructor") {
-      return res.status(401).json({
+      return res.status(403).json({
         success: false,
-        message: "This is a Protected Route for Instructor",
+        message: "Access Denied: Protected Route for Instructors",
       });
     }
     next();
   } catch (error) {
-    return res
-      .status(500)
-      .json({ success: false, message: `User Role Can't be Verified` });
+    return res.status(500).json({ success: false, message: "User Role Can't be Verified" });
   }
 };
 
-export { auth, isStudent, isAdmin, isInstructor };
+// Check if the user is a Seller
+const isSeller = async (req, res, next) => {
+  try {
+    const userDetails = await User.findById(req.user.id);
+
+    if (userDetails.accountType !== "Seller") {
+      return res.status(403).json({
+        success: false,
+        message: "Access Denied: Protected Route for Sellers",
+      });
+    }
+    next();
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "User Role Can't be Verified" });
+  }
+};
+
+export { auth, isStudent, isAdmin, isInstructor, isSeller };
