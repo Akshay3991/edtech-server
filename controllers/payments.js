@@ -200,42 +200,51 @@ const enrollStudents = async (courses, userId, res) => {
 
 // Capture product payment and initiate Razorpay order
 export const captureProductPayment = async (req, res) => {
-  let { products } = req.body; // Accept products from request
+  let { products } = req.body;
   const userId = req.user.id;
 
-  // Convert a single product ID into an array for consistency
+  if (!products) {
+    return res.status(400).json({ success: false, message: "No products selected" });
+  }
+
+  // Ensure products is an array
   if (!Array.isArray(products)) {
     products = [products];
   }
 
-  if (!products || products.length === 0) {
-    return res.status(400).json({ success: false, message: "No products selected" });
-  }
-
   let total_amount = 0;
 
-  try {
-    for (const productId of products) {
-      const product = await Product.findById(productId);
+  for (const productId of products) {
+    let product;
+    try {
+      console.log("Fetching product with ID:", productId);
+      product = await Product.findById(productId);
       if (!product) {
-        return res.status(404).json({ success: false, message: "Product not found" });
+        return res.status(404).json({ success: false, message: `Product not found: ${productId}` });
       }
+
       total_amount += product.price;
+    } catch (error) {
+      console.error("Error fetching product:", error);
+      return res.status(500).json({ success: false, message: error.message });
     }
+  }
 
-    const options = {
-      amount: total_amount * 100, // Convert to paise
-      currency: "INR",
-      receipt: `order_${Date.now()}`,
-    };
+  const options = {
+    amount: total_amount * 100, // Convert to paise
+    currency: "INR",
+    receipt: `order_${Date.now()}`,
+  };
 
+  try {
     const paymentResponse = await instance.orders.create(options);
-    return res.json({ success: true, data: paymentResponse });
-
+    res.json({ success: true, data: paymentResponse });
   } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
+    console.error("Payment Error:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 
 // Verify product payment
