@@ -217,7 +217,7 @@ export const captureProductPayment = async (req, res) => {
   for (const productId of products) {
     let product;
     try {
-      console.log("Fetching product with ID:", productId);
+      // console.log("Fetching product with ID:", productId);
       product = await Product.findById(productId);
       if (!product) {
         return res.status(404).json({ success: false, message: `Product not found: ${productId}` });
