@@ -1,5 +1,5 @@
 export const paymentSuccessEmail = (name, amount, orderId, paymentId) => {
-  return `<!DOCTYPE html>
+    return `<!DOCTYPE html>
     <html>
     
     <head>

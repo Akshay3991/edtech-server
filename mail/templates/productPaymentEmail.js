@@ -1,5 +1,5 @@
 export const productPaymentEmail = (userName, amount, orderId, paymentId) => {
-    return `
+  return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd;">
       <h2 style="color: #4CAF50;">Payment Successful 🎉</h2>
       <p>Dear <strong>${userName}</strong>,</p>
@@ -15,7 +15,7 @@ export const productPaymentEmail = (userName, amount, orderId, paymentId) => {
       <p>Your order will be processed shortly. If you have any questions, feel free to contact our support team.</p>
       
       <p style="margin-top: 20px;">Best regards,</p>
-      <p><strong>Your Company Name</strong></p>
+      <p><strong>Education Mart</strong></p>
     </div>
   `;
 };
