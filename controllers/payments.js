@@ -200,27 +200,22 @@ const enrollStudents = async (courses, userId, res) => {
 
 // Capture product payment and initiate Razorpay order
 export const captureProductPayment = async (req, res) => {
-  const { products } = req.body;
-  const userId = req.user.id;
+  const { productId } = req.body;
 
-  if (!products || products.length === 0) {
-    return res.status(400).json({ success: false, message: "No products selected" });
-  }
+
 
   let total_amount = 0;
 
-  for (const productId of products) {
-    let product;
-    try {
-      product = await Product.findById(productId);
-      if (!product) {
-        return res.status(404).json({ success: false, message: "Product not found" });
-      }
-
-      total_amount += product.price;
-    } catch (error) {
-      return res.status(500).json({ success: false, message: error.message });
+  let product;
+  try {
+    product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
     }
+
+    total_amount += product.price;
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 
   const options = {
