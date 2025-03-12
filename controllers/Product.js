@@ -119,3 +119,14 @@ export const deleteProduct = async (req, res) => {
         res.status(500).json({ success: false, message: "Server error", error });
     }
 };
+export const getSellerProducts = async (req, res) => {
+    try {
+        const sellerId = req.user.id; // Get seller ID from the authenticated user
+
+        const products = await Product.find({ seller: sellerId });
+
+        res.status(200).json({ success: true, products });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Error fetching seller products" });
+    }
+};
