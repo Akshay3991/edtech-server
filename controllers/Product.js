@@ -60,8 +60,8 @@ export const addProduct = async (req, res) => {
 // 🔹 Update Product
 export const updateProduct = async (req, res) => {
     try {
-        const { name, price, description, category, stock } = req.body;
-        let updatedData = { name, price, description, category, stock };
+        const { name, price, description, category, stock, sold } = req.body;
+        let updatedData = { name, price, description, category, stock, sold }; // ✅ Include `sold`
 
         const existingProduct = await Product.findById(req.params.id);
         if (!existingProduct) {
@@ -80,7 +80,14 @@ export const updateProduct = async (req, res) => {
             updatedData.image = productImage.secure_url;
         }
 
-        const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updatedData, { new: true });
+        // ✅ Explicitly log before updating
+        console.log("Updating Product:", req.params.id, "with data:", updatedData);
+
+        // ✅ Ensure `sold` value updates correctly
+        const updatedProduct = await Product.findByIdAndUpdate(req.params.id, { $set: updatedData }, { new: true });
+
+        // ✅ Log after update
+        console.log("Updated Product:", updatedProduct);
 
         res.status(200).json({ success: true, product: updatedProduct });
     } catch (error) {
@@ -88,6 +95,7 @@ export const updateProduct = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
 
 // 🔹 Delete Product
 export const deleteProduct = async (req, res) => {
