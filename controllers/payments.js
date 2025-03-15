@@ -276,18 +276,23 @@ const processProductOrder = async (products, userId) => {
       const purchasedProduct = await Product.findById(productId);
       if (!purchasedProduct) continue;
 
+      // Update the user's orderedProducts list
       await User.findByIdAndUpdate(
         userId,
         { $push: { orderedProducts: productId } }, // ✅ Ensure orderedProducts array is updated
         { new: true }
       );
+
+      // Update product stock and sold count
+      purchasedProduct.stock -= 1; // ✅ Assuming quantity is always 1
+      purchasedProduct.sold += 1;
+      await purchasedProduct.save();
     } catch (error) {
       console.error("Error processing product order:", error);
     }
   }
 };
 
-// ✅ Payment verification and order processing
 export const verifyProductPayment = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, products } = req.body;
@@ -297,7 +302,7 @@ export const verifyProductPayment = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid payment details" });
     }
 
-    // Verify Razorpay Signature
+    // 🔹 Verify Razorpay Signature
     const generatedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_SECRET)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
@@ -307,28 +312,8 @@ export const verifyProductPayment = async (req, res) => {
       return res.status(400).json({ success: false, message: "Payment Verification Failed" });
     }
 
-    // ✅ Extract product IDs from objects
-    const orderedProductIds = products.map((p) => p.productId);
-
-    // ✅ Store ordered products in the user model
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-    user.orderedProducts.push(...orderedProductIds);
-    await user.save();
-
-    // ✅ Update stock & sold values for each product
-    await Promise.all(
-      products.map(async (p) => {
-        const product = await Product.findById(p.productId);
-        if (product) {
-          product.stock -= p.quantity;
-          product.sold += p.quantity;
-          await product.save();
-        }
-      })
-    );
+    // ✅ Process the product order & update user's purchase history
+    await processProductOrder(products, userId);
 
     return res.status(200).json({ success: true, message: "Payment Verified & Order Processed" });
 
