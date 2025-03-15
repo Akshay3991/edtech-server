@@ -144,7 +144,7 @@ export const getPurchasedProducts = async (req, res) => {
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
-
+        console.log(user)
         // ✅ Ensure orderedProducts includes order details along with product info
         const purchasedProducts = user.orderedProducts.map((order) => ({
             product: order.product, // Populated product details
