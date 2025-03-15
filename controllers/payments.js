@@ -292,7 +292,7 @@ export const verifyProductPayment = async (req, res) => {
 
     user.orderedProducts.push(...orderedProducts);
     await user.save();
-
+    console.log(user)
     // 🔹 Update Stock & Sold Count for Each Product Efficiently
     const bulkOperations = products.map((p) => ({
       updateOne: {
