@@ -253,11 +253,12 @@ export const verifyProductPayment = async (req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, products } = req.body;
     const userId = req.user.id;
 
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !products || !userId) {
-      return res.status(400).json({ success: false, message: "Invalid payment details" });
+    // 🔹 Validate Request Data
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !products || !Array.isArray(products) || products.length === 0 || !userId) {
+      return res.status(400).json({ success: false, message: "Invalid payment details or product data." });
     }
 
-    // Verify Razorpay Signature
+    // 🔹 Verify Razorpay Signature
     const generatedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_SECRET)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
@@ -267,36 +268,48 @@ export const verifyProductPayment = async (req, res) => {
       return res.status(400).json({ success: false, message: "Payment Verification Failed" });
     }
 
-    // ✅ Store ordered products in user model and update stock
+    // 🔹 Fetch User
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    const orderedProductIds = products.map((p) => p.productId);
-    user.orderedProducts.push(...orderedProductIds);
+    // 🔹 Validate Products Before Updating User
+    const validProducts = await Product.find({ _id: { $in: products.map((p) => p.productId) } });
+
+    if (validProducts.length !== products.length) {
+      return res.status(400).json({ success: false, message: "Some products were not found." });
+    }
+
+    // 🔹 Store Ordered Products in User Model
+    const orderedProducts = products.map((p) => ({
+      product: p.productId,
+      quantity: p.quantity,
+      orderId: razorpay_order_id,
+      paymentId: razorpay_payment_id,
+      purchasedAt: new Date(),
+    }));
+
+    user.orderedProducts.push(...orderedProducts);
     await user.save();
 
-    // ✅ Update stock & sold values for each product
-    await Promise.all(
-      products.map(async (p) => {
-        const product = await Product.findById(p.productId);
-        if (product) {
-          product.stock -= p.quantity;
-          product.sold += p.quantity;
-          await product.save();
-        }
-      })
-    );
+    // 🔹 Update Stock & Sold Count for Each Product Efficiently
+    const bulkOperations = products.map((p) => ({
+      updateOne: {
+        filter: { _id: p.productId },
+        update: { $inc: { stock: -p.quantity, sold: p.quantity } },
+      },
+    }));
 
-    return res.status(200).json({ success: true, message: "Payment Verified & Order Processed" });
+    await Product.bulkWrite(bulkOperations);
+
+    return res.status(200).json({ success: true, message: "Payment Verified & Order Processed Successfully" });
 
   } catch (error) {
     console.error("Payment Verification Error:", error);
-    return res.status(500).json({ success: false, message: "Server Error" });
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
-
 // Send Payment Success Email for Products
 export const sendProductPaymentEmail = async (req, res) => {
   const { orderId, paymentId, amount } = req.body;

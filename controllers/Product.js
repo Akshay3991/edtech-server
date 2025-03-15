@@ -134,16 +134,30 @@ export const getPurchasedProducts = async (req, res) => {
     try {
         const userId = req.user.id;
 
-        // Fetch user's ordered products and populate details
-        const user = await User.findById(userId).populate("orderedProducts");
+        // Fetch user's ordered products and populate product details
+        const user = await User.findById(userId)
+            .populate({
+                path: "orderedProducts.product", // Populate product details
+                select: "name price image", // Select relevant fields
+            });
 
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        res.status(200).json({ success: true, products: user.orderedProducts });
+        // ✅ Ensure orderedProducts includes order details along with product info
+        const purchasedProducts = user.orderedProducts.map((order) => ({
+            product: order.product, // Populated product details
+            quantity: order.quantity,
+            orderId: order.orderId,
+            paymentId: order.paymentId,
+            purchasedAt: order.purchasedAt,
+        }));
+
+        res.status(200).json({ success: true, products: purchasedProducts });
     } catch (error) {
         console.error("Error fetching purchased products:", error);
         res.status(500).json({ success: false, message: "Failed to fetch purchased products" });
     }
 };
+
