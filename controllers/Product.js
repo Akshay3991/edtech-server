@@ -1,7 +1,7 @@
 import { Product } from "../models/Product.js";
 import { uploadImageToCloudinary } from "../utils/imageUploader.js";
 import { v2 as cloudinary } from "cloudinary";
-
+import { User } from "../models/User.js";
 // 🔹 Get All Products
 export const getAllProducts = async (req, res) => {
     try {
