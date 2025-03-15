@@ -130,3 +130,20 @@ export const getSellerProducts = async (req, res) => {
         res.status(500).json({ success: false, message: "Error fetching seller products" });
     }
 };
+export const getPurchasedProducts = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Fetch user's ordered products and populate details
+        const user = await User.findById(userId).populate("orderedProducts");
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        res.status(200).json({ success: true, products: user.orderedProducts });
+    } catch (error) {
+        console.error("Error fetching purchased products:", error);
+        res.status(500).json({ success: false, message: "Failed to fetch purchased products" });
+    }
+};

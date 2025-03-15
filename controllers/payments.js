@@ -249,24 +249,52 @@ export const captureProductPayment = async (req, res) => {
 
 // Verify product payment
 export const verifyProductPayment = async (req, res) => {
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, products } = req.body;
-  const userId = req.user.id;
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, products } = req.body;
+    const userId = req.user.id;
 
-  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !products || !userId) {
-    return res.status(400).json({ success: false, message: "Invalid payment details" });
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !products || !userId) {
+      return res.status(400).json({ success: false, message: "Invalid payment details" });
+    }
+
+    // Verify Razorpay Signature
+    const generatedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_SECRET)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest("hex");
+
+    if (generatedSignature !== razorpay_signature) {
+      return res.status(400).json({ success: false, message: "Payment Verification Failed" });
+    }
+
+    // ✅ Store ordered products in user model and update stock
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const orderedProductIds = products.map((p) => p.productId);
+    user.orderedProducts.push(...orderedProductIds);
+    await user.save();
+
+    // ✅ Update stock & sold values for each product
+    await Promise.all(
+      products.map(async (p) => {
+        const product = await Product.findById(p.productId);
+        if (product) {
+          product.stock -= p.quantity;
+          product.sold += p.quantity;
+          await product.save();
+        }
+      })
+    );
+
+    return res.status(200).json({ success: true, message: "Payment Verified & Order Processed" });
+
+  } catch (error) {
+    console.error("Payment Verification Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
   }
-
-  const generatedSignature = crypto
-    .createHmac("sha256", process.env.RAZORPAY_SECRET)
-    .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-    .digest("hex");
-
-  if (generatedSignature === razorpay_signature) {
-    await processProductOrder(products, userId);
-    return res.status(200).json({ success: true, message: "Payment Verified" });
-  }
-
-  return res.status(400).json({ success: false, message: "Payment Verification Failed" });
 };
 
 // Send Payment Success Email for Products
