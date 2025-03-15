@@ -5,7 +5,8 @@ import {
     addProduct,
     updateProduct,
     deleteProduct,
-    getSellerProducts
+    getSellerProducts,
+    getPurchasedProducts
 } from "../controllers/Product.js";
 import { auth, isAdmin, isSeller } from "../middleware/auth.js";
 const router = express.Router();
