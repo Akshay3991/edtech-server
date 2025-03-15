@@ -17,7 +17,7 @@ router.get("/seller-products", auth, getSellerProducts);
 router.get("/purchased-products", auth, getPurchasedProducts);
 
 router.post("/addproducts", auth, isSeller, addProduct);
-router.put("/updateproducts/:id", auth, updateProduct);
+router.put("/updateproducts/:id", auth, isSeller, updateProduct);
 router.delete("/deleteproducts/:id", auth, isSeller, deleteProduct);
 
 export default router;
