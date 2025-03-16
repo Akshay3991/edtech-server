@@ -47,13 +47,13 @@ const userSchema = new mongoose.Schema(
         ref: "Course",
       },
     ],
-    // ✅ Updated orderedProducts to store more details
+    // ✅ Enhanced orderedProducts structure
     orderedProducts: [
       {
-        product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" }, // Store product reference
-        quantity: { type: Number, required: true }, // Store quantity purchased
-        orderId: { type: String, required: true }, // Store Razorpay Order ID
-        paymentId: { type: String, required: true }, // Store Payment ID
+        product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true }, // Store product reference
+        quantity: { type: Number, required: true, min: 1 }, // Store quantity purchased (min 1)
+        orderId: { type: String, required: true, trim: true }, // Store Razorpay Order ID
+        paymentId: { type: String, required: true, trim: true }, // Store Payment ID
         purchasedAt: { type: Date, default: Date.now }, // Store purchase timestamp
       },
     ],

@@ -269,29 +269,6 @@ export const sendProductPaymentEmail = async (req, res) => {
   }
 };
 
-// Process product order and update user purchase history
-const processProductOrder = async (products, userId) => {
-  for (const productId of products) {
-    try {
-      const purchasedProduct = await Product.findById(productId);
-      if (!purchasedProduct) continue;
-
-      // Update the user's orderedProducts list
-      await User.findByIdAndUpdate(
-        userId,
-        { $push: { orderedProducts: productId } }, // ✅ Ensure orderedProducts array is updated
-        { new: true }
-      );
-
-      // Update product stock and sold count
-      purchasedProduct.stock -= 1; // ✅ Assuming quantity is always 1
-      purchasedProduct.sold += 1;
-      await purchasedProduct.save();
-    } catch (error) {
-      console.error("Error processing product order:", error);
-    }
-  }
-};
 
 export const verifyProductPayment = async (req, res) => {
   try {
@@ -312,13 +289,50 @@ export const verifyProductPayment = async (req, res) => {
       return res.status(400).json({ success: false, message: "Payment Verification Failed" });
     }
 
-    // ✅ Process the product order & update user's purchase history
-    await processProductOrder(products, userId);
+    // ✅ Process the product order (assuming quantity is always 1)
+    const formattedProducts = products.map((productId) => ({ productId, quantity: 1 }));
+    await processProductOrder(formattedProducts, userId, razorpay_order_id, razorpay_payment_id);
 
     return res.status(200).json({ success: true, message: "Payment Verified & Order Processed" });
 
   } catch (error) {
     console.error("Payment Verification Error:", error);
     return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// Process product order and update user purchase history
+
+const processProductOrder = async (products, userId, orderId, paymentId) => {
+  for (const { productId, quantity = 1 } of products) { // ✅ Default quantity = 1
+    try {
+      const purchasedProduct = await Product.findById(productId);
+      if (!purchasedProduct) continue;
+
+      // Update user's orderedProducts list
+      await User.findByIdAndUpdate(
+        userId,
+        {
+          $push: {
+            orderedProducts: {
+              product: purchasedProduct._id,
+              quantity, // Always 1 if not provided
+              orderId,
+              paymentId,
+              purchasedAt: new Date(),
+            },
+          },
+        },
+        { new: true }
+      );
+
+      // Update product stock and sold count
+      purchasedProduct.stock -= quantity;
+      purchasedProduct.sold += quantity;
+      await purchasedProduct.save();
+
+    } catch (error) {
+      console.error("Error processing product order:", error);
+    }
   }
 };
