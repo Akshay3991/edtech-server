@@ -76,32 +76,36 @@ export const verifyPayment = async (req, res) => {
   const razorpay_payment_id = req.body?.razorpay_payment_id
   const razorpay_signature = req.body?.razorpay_signature
   const courses = req.body?.courses
+  const platform = req.body?.platform // 'web' or 'android'
 
   const userId = req.user.id
 
   if (
     !razorpay_order_id ||
     !razorpay_payment_id ||
-    !razorpay_signature ||
     !courses ||
     !userId
   ) {
     return res.status(200).json({ success: false, message: "Payment Failed" })
   }
 
-  let body = razorpay_order_id + "|" + razorpay_payment_id
+  // Only verify signature for web platform
+  if (platform === 'web' && razorpay_signature) {
+    let body = razorpay_order_id + "|" + razorpay_payment_id
 
-  const expectedSignature = crypto
-    .createHmac("sha256", process.env.RAZORPAY_SECRET)
-    .update(body.toString())
-    .digest("hex")
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_SECRET)
+      .update(body.toString())
+      .digest("hex")
 
-  if (expectedSignature === razorpay_signature) {
-    await enrollStudents(courses, userId, res)
-    return res.status(200).json({ success: true, message: "Payment Verified" })
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(200).json({ success: false, message: "Payment Verification Failed" })
+    }
   }
 
-  return res.status(200).json({ success: false, message: "Payment Failed" })
+  // For Android or if signature verification passes, proceed with enrollment
+  await enrollStudents(courses, userId, res)
+  return res.status(200).json({ success: true, message: "Payment Verified" })
 }
 
 // Send Payment Success Email
